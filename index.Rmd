@@ -1,0 +1,31 @@
+--- 
+title: "Algae Blooms in High Mountain Reservoirs after Wildfire"
+author: "Kathryn Willi"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: "This report summarizes our initial findings after the first year of monitoring reservoirs within the Cameron Peak Fire burn scar. The output format for this report is bookdown::gitbook."
+---
+
+# Introduction
+
+```{r, include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown',  'tidyverse', 'sf', 'mapview', 'leafpop', 'geomtextpath'
+), 'packages.bib')
+```
+
+```{r, echo=F, fig.width=11.5, fig.cap="Burned landscape on the banks of Chambers Reservoir."}
+knitr::include_graphics("data/chambers.jpg")
+```
+
+The Upper Cache la Poudre River Watershed is an important regional drinking water supply to Fort Collins and its surrounding communities, with over 300,000 users relying on it as a source of water. Drinking water utilities utilize several high mountain reservoirs that capture and store water during spring's snowmelt and use it as drinking water from mid-summer through winter. However, the watershed has experienced brief episodes of seasonal water quality degradation that is suspected to be caused by reservoir algae blooms. Because these events are episodic and flashy, they are difficult to predict and challenging to manage. 
+
+In 2020, the Cameron Peak Wildfire burned 209,000 acres of the Poudre Watershed, including 44% of the headwaters that feed these high mountain water supply reservoirs. Understanding that the fire's long-lasting effects will likely exacerbate the occurrence of algae blooms, we hope to better understand the pre-fire reservoir water quality dynamics that led to the algae blooms in the first place, but also identify the true risk of these algae bloom becoming more frequent now that the watershed has been impacted by wildfire.
+
+Starting in 2021, we began to measure chlorophyll a concentrations, nutrient concentrations, and other chemical constituents weekly across a network of stream and reservoir sampling sites to identify the initial impacts that the fire had on the Poudre's drinking water supplies. 

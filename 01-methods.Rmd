@@ -1,0 +1,91 @@
+# Site Locations
+
+We developed a network of sampling sites across five major reservoirs and their inflows and outflows, all of which were impacted by the Cameron Peak Fire to varying degrees. To characterize these differences in burn impact, we developed an area-weighted soil burn severity index for a) each location's catchment, and b) each reservoir's surrounding area (here we define 'surrounding area' as the 120 m buffer around each reservoir) using the following area-weighted scores:
+
+- High Severity = 1
+- Moderate Severity = 0.7
+- Low Severity = 0.4
+- Very Low Severity/Unburned = 0.1
+- Outside Burn Scar = 0
+
+Barnes Meadow and Peterson Reservoirs had the greatest burn impacts based on their watershed index scores (0.45 and 0.30, respectively), while Chambers and Peterson Reservoirs had the highest burn indices based on their surrounding area (0.33 and 0.32, respectively). While Joe Wright Reservoir experienced some effects from the fire (watershed index = 0.05, surrounding area index = 0.01), Long Draw Reservoir was entirely out of the Cameron Peak Fire burn scar. Our site upstream of Joe Wright Reservoir along Joe Wright Creek was also unaffected by the fire.
+
+```{r, echo = F, include= F, eval=T, warning=F, message=F}
+library(tidyverse)
+library(sf)
+library(mapview)
+library(leafpop)
+library(geomtextpath)
+
+daily_discharge <- read_csv('data/FCW_Rustic_Streamflow.csv') %>%
+  mutate(Date=as.Date(Date,format="%m/%d/%Y")) %>%
+  group_by(Date) %>%
+  summarize(mean_cfs=mean(CFS))
+
+buffer_sbs <- read_csv('data/raw/sbs_buffer.csv') %>%
+  mutate(Buffer_Level=((Unburned*0)+(V_Low*0.1)+(Low*0.4)+(Moderate*0.7)+(High*1))/(Unburned+V_Low+Low+Moderate+High))
+
+watershed_sbs <- read_csv('data/raw/sbs_watershed.csv') %>%
+  mutate(Watershed_Level=((Unburned*0)+(V_Low*0.1)+(Low*0.4)+(Moderate*0.7)+(High*1))/(Unburned+V_Low+Low+Moderate+High)) %>% rename(Site_Code=SITE_CODE)
+
+chla_table <- read_csv('data/Chla_Reservoir_Data.csv') %>%
+  left_join(read_csv('data/xy.csv'), by="Site_Code") %>%
+  filter(!is.na(Location)) %>%
+  mutate(Watershed=ifelse(Site_Code %in% c('LNGR','LNGO'),"Long Draw Reservoir",
+                   ifelse(Site_Code %in% c('PTRO','PTRR'),'Peterson Reservoir',
+                   ifelse(Site_Code %in% c('JOEI','JOER','CBRI'),"Joe Wright Reservoir",
+                   ifelse(Site_Code %in% c('CBRR','CHD'), "Chambers Reservoir",
+                   ifelse(Site_Code %in% c('BRNR','BMD'),"Barnes Meadow Reservoir",
+                   ifelse(Site_Code %in% c('COMR','COMO','COMI'),"Comanche Reservoir","Hourglass Reservoir"))))))) %>%
+  left_join(select(buffer_sbs,c(Watershed,Buffer_Level)),by="Watershed") %>%
+  left_join(select(watershed_sbs,c(Site_Code,Watershed_Level)),by="Site_Code") %>%
+  mutate(Date=as.Date(Date,format="%m/%d/%Y")) %>%
+  filter(Date > '2021-06-01') %>%
+  left_join(daily_discharge,by="Date") %>%
+  mutate(Season=ifelse(Date <= "2021-06-09", "SPRING",
+                       ifelse(Date <= "2021-09-24", "SUMMER","FALL"))) %>%
+  mutate(Status = ifelse(Site_Code %in% c('LNGR','LNGO','JOEI'),"Unburned",
+                         ifelse(Site_Code %in% c('COMI','COMR','COMO','HORI','HORR','HORO','PTRR','PTRO','CBRR','CHD','BRNR','BMD'), "Burned",
+                                "Partially Burned"))) %>%
+  mutate(Loc = ifelse(Site_Code %in% c("LNGR","PTRR","JOER","CBRR","BRNR","COMR","HORR"),"Reservoir",
+               ifelse(Site_Code %in% c("LNGO","PTRO","CHD","BMD","HORO","COMO","CBRI"),"Outflow","Inflow"))) %>%
+  filter(SAMPLE_TTYPE == "NORM") %>%
+  filter(!is.na(Chla)) %>%
+  dplyr::arrange(as.factor(Status)) %>%
+  filter(!Watershed %in% c('Comanche Reservoir', 'Hourglass Reservoir'))
+
+chla_xy <- st_as_sf(chla_table, coords=c('POINT_X','POINT_Y'), crs=4326) %>%
+  distinct(Site_Code,.keep_all=TRUE) %>%
+  select(c(Reservoir=Watershed,Location=Loc,Site_Code,Watershed_Index=Watershed_Level,Buffer_Index=Buffer_Level))
+
+sbs <- st_read('data/sbs.shp') %>%
+  summarize()
+
+```
+
+```{r,echo=F, include=T, eval=T, warning=F, message=F, fig.cap="Sites color-codedby their watershed burn index."}
+mapview(sbs, col.regions="#D55E00", alpha.regions=0.15, layer.name="Cameron Peak Fire Boundary", popup=F, label=F) +
+mapview(chla_xy, alpha.regions=1, zcol="Watershed_Index", col.regions=c("#56B4E9","#F0E442","#D55E00"), cex= 8, layer.name='Burn Severity Index (0-1)',
+       label = "Reservoir",
+       popup = popupTable(chla_xy,    zcol = c("Reservoir",
+                                               "Location",
+                                               "Watershed_Index")))
+```
+*Map 1: Sites color-coded based on their watershed burn index score.*
+
+```{r, echo=F, include=T, eval=T, warning=F, message=F, fig.cap="Reservoirs color-coded based on thier surrounding area burn index."}
+mapview(sbs, col.regions="#D55E00", alpha.regions=0.15, layer.name="Cameron Peak Fire Boundary", popup=F, label=F) +
+mapview(dplyr::filter(chla_xy, Location=="Reservoir"), alpha.regions=1, zcol="Buffer_Index", col.regions=c("#56B4E9","#F0E442","#D55E00"),
+        cex= 8, layer.name='Burn Severity Index (0-1)',
+        label = "Reservoir",
+        popup = popupTable(dplyr::filter(chla_xy, Location == "Reservoir"),  zcol = c("Reservoir",
+                                                "Location",
+                                                "Buffer_Index")))
+```
+*Map 2: Reservoirs color-coded based on their surrounding area burn index score.*
+
+Reservoir grab samples for chemical analysis were collected by wading out to a depth of four feet and collecting water in a 250 mL HDPE bottle with a grabber. 1L chlorophyll-a samples were filtered using a 0.7 um (??) Millipore borosilicate glass fiber filter in the field in shade, then frozen and stored in aluminum foil and out of light until lab analysis.
+
+```{r, echo=F, fig.width=8, fig.cap="Filtering a grab sample for chlorophyll a analysis."}
+knitr::include_graphics("data/Chla_Filtering.jpg")
+```
