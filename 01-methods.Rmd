@@ -1,6 +1,6 @@
 # Site Locations
 
-We developed a network of sampling sites across five major reservoirs and their inflows and outflows, all of which were impacted by the Cameron Peak Fire to varying degrees. To characterize these differences in burn impact, we developed an area-weighted soil burn severity index for a) each location's catchment, and b) each reservoir's surrounding area (here we define 'surrounding area' as the 120 m buffer around each reservoir) using the following area-weighted scores:
+We developed a network of sampling sites across five major reservoirs and their inflows and outflows: Joe Wright, Chambers, Barnes Meadow, Long Draw, and Peterson. All of these reservoirs were impacted by the Cameron Peak Fire to varying degrees, so to characterize these differences in burn impact we developed an area-weighted soil burn severity index for a) each location's catchment^[For reservoirs, these were delineated using the outlet of the reservoir, resulting in Long Draw, Peterson, Chamber, and Barnes Meadow Reservoirs having the same burn severity index as their outlet locations.], and b) each reservoir's surrounding area (here, we define 'surrounding area' as the 120 m buffer around each reservoir) using the following area-weighted scores:
 
 - High Severity = 1
 - Moderate Severity = 0.7
@@ -84,7 +84,7 @@ mapview(dplyr::filter(chla_xy, Location=="Reservoir"), alpha.regions=1, zcol="Bu
 ```
 *Map 2: Reservoirs color-coded based on their surrounding area burn index score.*
 
-Reservoir grab samples for chemical analysis were collected by wading out to a depth of four feet and collecting water in a 250 mL HDPE bottle with a grabber. 1L chlorophyll-a samples were filtered using a 0.7 um (??) Millipore borosilicate glass fiber filter in the field in shade, then frozen and stored in aluminum foil and out of light until lab analysis.
+Reservoir grab samples for chemical analysis were collected by wading out to a depth of approximately four feet and collecting water in a 250 mL HDPE bottle with a grabber. 1L chlorophyll-a samples were collected in similar fashion and then filtered in the field and in shade, then frozen and stored in aluminum foil and out of light until lab analysis.
 
 ```{r, echo=F, fig.width=8, fig.cap="Filtering a grab sample for chlorophyll a analysis."}
 knitr::include_graphics("data/Chla_Filtering.jpg")

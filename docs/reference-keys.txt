@@ -1,0 +1,6 @@
+fig:unnamed-chunk-2
+introduction
+site-locations
+initial-findings
+reservoir-and-stream-dynamics
+fire-effects-on-algae-dynamics

@@ -99,7 +99,18 @@ chla_table <- read_csv('data/Chla_Reservoir_Data.csv') %>%
                               Site_Code == 'CBRR' ~ 4,
                               Site_Code == 'CHD' ~ 5)) %>%
   dplyr::arrange(as.factor(Status)) %>%
-  dplyr::filter(!Watershed %in% c('Hourglass','Comanche'))
+  dplyr::filter(!Watershed %in% c('Hourglass','Comanche')) %>%
+  mutate(order = case_when(Site_Code =="JOEI" ~ "01",
+                        Site_Code == "LNGR" ~ "02",
+                        Site_Code == "LNGO" ~ "03",
+                        Site_Code == "JOER" ~ "04",
+                        Site_Code == "CBRI" ~ "05",
+                        Site_Code == "CBRR" ~ "06",
+                        Site_Code == "CHD" ~ "07",
+                        Site_Code == "PTRR" ~ "08",
+                        Site_Code == "PTRO" ~ "09",
+                        Site_Code == "BRNR" ~ "10",
+                        Site_Code == "BMD" ~ "11"))
 
 chla_downstream_seasonal <- chla_table %>%
   dplyr::filter(!is.na(Chla)) %>%
@@ -117,6 +128,7 @@ chla_day <- chla_table %>%
                 Date == "2021-09-01"|
                 Date == "2021-10-26") %>%
 mutate(Date=as.character(Date))
+  
   #dplyr::summarize(mean_chla=mean(Chla))
 
 chla_day_wide <- pivot_wider(chla_day,id_cols=Chla,names_from=Date) 
@@ -125,41 +137,28 @@ chla_xy <- st_as_sf(chla_table, coords=c('POINT_X','POINT_Y'), crs=4326)
 
 ```
 
-No problematic algae blooms were discovered by our field technicians during the course of sampling at any reservoir, nor was there evidence of algae blooms starting in the reservoirs and propagating downstream in Joe Wright Creek or the Cache la Poudre River. The only place of robust algae growth was on the spillway of Barnes Meadow Reservoir, with large filamentous algal communities consistently seen there all summer. Despite the lack of harmful algae blooms, the five reservoirs impacted by the Cameron Peak Fire experienced mesotrophic concentrations of chlorophyll a (>2.5 ug/L) at least once during the sampling season. On the other hand, the two reservoirs considered controls in this study (Joe Wright and Long Draw Reservoirs) had chlorophyll a concentrations consistently below 2.5 ug/L, though Joe Wright Reservoir experienced one mesotrophic day near the end of the season.
+No problematic algae blooms were discovered by our field technicians during the course of sampling at any reservoir, nor was there evidence of algae blooms starting in the reservoirs and propagating downstream in Joe Wright Creek or the Cache la Poudre River. The only place of robust algae growth was on the spillway of Barnes Meadow Reservoir, with large filamentous algal communities consistently seen there all summer. Despite the lack of algae blooms, the five reservoirs impacted by the Cameron Peak Fire experienced mesotrophic concentrations of chlorophyll a (>2.6 μg/L) at least once during the sampling season. On the other hand, the two reservoirs considered controls in this study (Joe Wright and Long Draw Reservoirs) had chlorophyll a concentrations consistently below 2.6 μg/L, though Joe Wright Reservoir experienced one mesotrophic day near the end of the season. When assessing mean chlorophyll a concentrations computed for the season across all sites, one can see a general increase in chlorophyll a concentration with watershed burn intensity. 
 
-```{r, echo = F, include= F, eval=F, warning=F, message=F, fig.width=11.5, fig.cap=""}
-# ggplot(filter(chla_table, Loc=="Reservoir")) +
-#   #geom_path(aes(x=Date, y=Chla, group=Site_Code, color=Watershed_Level, label=Watershed), size=1) +
-#   geom_point(aes(x=Date,y=Chla, color=Watershed_Level), size=3.5) +
-#   geom_textpath(aes(x=Date, y=Chla, group=Site_Code, color=Watershed_Level, size=3, label=Watershed), size=5, fontface=2, hjust=0.5, vjust=0.0) +
-#   scale_color_gradient2(name="Contributing Area Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
-#   geom_abline(aes(slope=0, intercept=2.5), color='black', linetype="dashed") +
-#   labs(x = "Date", y = "Chlorophyll a (μg/L)") +
-#   theme_bw(base_size=20) +
-#   theme(legend.position = "none")
+```{r, echo = F, include = T, eval = T, warning = F, message = F, fig.width = 11.5, fig.cap = "Chlorophyll a concentrations during the 2021 field season at all studied reservoirs. Blue and green colored reservoirs had little or no watershed impact from the Cameron Peak Fire based on both burn severity and extent burned, while yellow to red reservoirs had an increasing impact from the fire."}
+ggplot(filter(chla_table, Loc=="Reservoir")) +
+  #geom_path(aes(x=Date, y=Chla, group=Site_Code, color=Watershed_Level, label=Watershed), size=1) +
+  geom_point(aes(x=Date,y=Chla, color=Watershed_Level), size=3.5) +
+  geom_textpath(aes(x=Date, y=Chla, group=Site_Code, color=Watershed_Level, size=3, label=Watershed), size=5, fontface=2, hjust=0.5, vjust=0.0) +
+  scale_color_gradient2(name="Contributing Area Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  geom_abline(aes(slope=0, intercept=2.6), color='black', linetype="dashed") +
+  labs(x = "Date", y = "Chlorophyll a (μg/L)") +
+  theme_bw(base_size=20) +
+  theme(legend.position = "none")
 ```
 
-```{r, echo=F, fig.width=11.5, fig.cap="Chlorophyll a concentrations during the 2021 field season at all studied reservoirs, and a map of study sites. Blue and green colored sites had little or no watershed impact from the Cameron Peak fire based on both burn severity and extent burned, while yellow to red sites had an increasing impact from the fire."}
-knitr::include_graphics("data/chla.jpg")
+```{r, echo = F, include = F, eval = F, fig.width = 11.5, fig.cap = "Chlorophyll a concentrations during the 2021 field season at all studied reservoirs, and a map of study sites. Blue and green colored sites had little or no watershed impact from the Cameron Peak Fire based on both burn severity and extent burned, while yellow to red sites had an increasing impact from the fire."}
+#knitr::include_graphics("data/chla.jpg")
 ```
 
-
-```{r, echo = F, include= T, eval=T, warning=F, message=F, fig.width=11.5, fig.cap="Boxplots of chlorophyll a concentrations at each site through the 2021 field season. Watershed burn intensity increases across the x-axis."}
-
-chla_table <- chla_table %>%
-    arrange(Watershed_Level) %>%    # First sort by val. This sort the dataframe but NOT the factor levels
- # mutate(name=factor(Site_Code, levels=Site_Code)) 
-mutate(name = fct_reorder(Site_Code, Watershed_Level))
-
-means <- chla_table %>%
-  group_by(name) %>%
-  summarize(mean=mean(Chla),
-            max=max(Chla))
-#levels=c("LNGR","LNGO","JOEI","JOER","CBRI","CBRR","CHD","PTRR","PTRO","BRNR","BMD")
+```{r, echo = F, include= T, eval=T, warning=F, message=F, fig.width=11.5, fig.cap="Boxplots of chlorophyll a concentrations at each site through the 2021 field season. The mean concentration is displayed as the line on the boxplot. Watershed burn intensity increases across the x-axis."}
 
 ggplot() + 
-  geom_boxplot(data=chla_table,aes(x=name,y=Chla, fill=Watershed_Level)) +
-  geom_point(data=means, aes(x=name,y=mean))+
+  geom_boxplot(data=chla_table,aes(x=reorder(Site_Code,order,max),y=Chla, middle=mean(Chla), fill=Watershed_Level)) +
   scale_fill_gradient2(name="Watershed Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", 
                         guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
   theme_bw(base_size=20)+
@@ -167,14 +166,14 @@ ggplot() +
   labs(x = "Site", y = "Chlorophyll a (μg/L)") 
 ```
 
-Levels of total dissolved nitrogen (TDN) were often elevated at Barnes Meadow and Peterson Reservoirs, while NO3 was consistently elevated at Long Draw Reservoir.
+Total dissolved nitrogen (TDN) concentrations peaked in the early part of the season, with all but one reservoir (Chambers) peaking on the same day in late June, and then stabilized by mid July. TDN was often highest at Peterson Reservoir. Nitrate (NO3) was consistently elevated at Long Draw Reservoir while other reservoir's NO3 concentrations remained low. However, Peterson Reservoir's NO3 levels rose for a roughly one-month period starting in mid-July. A tight link between increasing watershed burn severity and Potassium (K) concentrations was found for the whole season. Meanwhile, only two reservoir samples had detectable levels of PO4; one at Barnes Meadow and one at Long Draw Reservoir. Both of these samples were from later in the summer. When assessing mean nutrient concentrations computed for the season across all sites, one can see a negative relationship between watershed burn intensity and NO3, ,  increase in K concentrations with watershed burn intensity.
 
-```{r, echo = F, include= T, eval=T, warning=F, message=F, fig.width=11.5, fig.height=11, fig.cap="Nutrients through time at each reservoir studied in 2021."}
+```{r, echo = F, include= T, eval=T, warning=F, message=F, fig.width=11.5, fig.height=11, fig.cap="Nutrient concentrations through time at all studied reservoirs. Blue and green colored reservoirs had little or no watershed impact from the Cameron Peak Fire based on both burn severity and extent burned, while yellow to red reservoirs had an increasing impact from the fire."}
 nit_table<-filter(chla_table, Stream != "Comanche Reservoir" & Stream != "Hourglass Reservoir")
 
 tdn <- ggplot(filter(nit_table, Loc=="Reservoir")) +
   geom_point(aes(x=Date,y=DTN, color=Watershed_Level), size=3) +
-  geom_textpath(aes(x=Date, y=DTN, group=Site_Code, color=Watershed_Level, size=1, label=Watershed), size=7, fontface=2, hjust=0.99, vjust=0.5) +
+  geom_textpath(aes(x=Date, y=DTN, group=Site_Code, color=Watershed_Level, size=1, label=Watershed), size=5, fontface=2, hjust=0.8, vjust=0.5) +
   scale_color_gradient2(name="Contributing Area Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
   geom_abline(aes(slope=0, intercept=2.5), color='black', linetype="dashed") +
   labs(x = "", y = "TDN (mg/L)") +
@@ -195,21 +194,70 @@ no3 <- ggplot(filter(nit_table, Loc=="Reservoir")) +
 
 #ggsave('data/plot_no3.jpg',plot=last_plot(), width=14,height=4.5)
 
-nh4 <- ggplot(filter(nit_table, Loc=="Reservoir")) +
-  geom_path(aes(x=Date, y=NH4...20, group=Site_Code, color=Watershed_Level, label=Watershed), size=1) +
-  geom_point(aes(x=Date,y=NH4...20, color=Watershed_Level), size=3) +
+k <- ggplot(filter(nit_table, Loc=="Reservoir")) +
+  geom_path(aes(x=Date, y=K...21, group=Site_Code, color=Watershed_Level, label=Watershed), size=1) +
+  geom_point(aes(x=Date,y=K...21, color=Watershed_Level), size=3) +
   #geom_textpath(aes(x=Date, y=NH4...20, group=Site_Code, color=Watershed_Level, size=1, label=Watershed), size=5, fontface=2, hjust=0.25, vjust=0.5) +
   scale_color_gradient2(name="Contributing Area Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
   geom_abline(aes(slope=0, intercept=2.5), color='black', linetype="dashed") +
-  labs(x = "Date", y = "NH4 (mg/L)") +
+  labs(x = "Date", y = "K (mg/L)") +
+  theme_bw(base_size=25) +
+  theme(legend.position = "none") 
+
+po4 <- ggplot(filter(nit_table, Loc=="Reservoir")) +
+  geom_path(aes(x=Date, y=PO4...27, group=Site_Code, color=Watershed_Level, label=Watershed), size=1) +
+  geom_point(aes(x=Date,y=PO4...27, color=Watershed_Level), size=3) +
+  #geom_textpath(aes(x=Date, y=NH4...20, group=Site_Code, color=Watershed_Level, size=1, label=Watershed), size=5, fontface=2, hjust=0.25, vjust=0.5) +
+  scale_color_gradient2(name="Contributing Area Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  geom_abline(aes(slope=0, intercept=2.5), color='black', linetype="dashed") +
+  labs(x = "", y = "PO4 (mg/L)") +
   theme_bw(base_size=25) +
   theme(legend.position = "none") 
 
 #ggsave('data/plot_ammonium.jpg',plot=last_plot(), width=14,height=4.5)
 
-ggarrange(tdn,no3,nh4, ncol=1, nrow=3)#, common.legend=T) 
+ggarrange(tdn,no3,po4,k, ncol=1, nrow=4)#, common.legend=T) 
 ```
 
+```{r, echo = F, include= T, eval=T, warning=F, message=F, fig.width=11.5, fig.height=11, fig.cap="Boxplots of nutrient concentrations at each site through the 2021 field season. The mean concentration is displayed as the line on each boxplot. Watershed burn intensity increases across the x-axis."}
+
+tdn <- ggplot() +
+  geom_boxplot(data=chla_table,aes(x=reorder(Site_Code,order,max),y=DTN, middle=mean(DTN), fill=Watershed_Level)) +
+  scale_fill_gradient2(name="Watershed Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", 
+                        guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  theme_bw(base_size=20)+
+  theme(legend.position = "none") +
+  labs(x = "", y = "TDN (mg/L)") 
+
+
+no3 <- ggplot() +
+  geom_boxplot(data=chla_table,aes(x=reorder(Site_Code,order,max),y = NO3...26, middle=mean(DTN), fill=Watershed_Level)) +
+  scale_fill_gradient2(name="Watershed Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", 
+                        guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  theme_bw(base_size=20)+
+  theme(legend.position = "none") +
+  labs(x = "", y = "NO3 (mg/L)") 
+
+k <- ggplot() +
+  geom_boxplot(data=chla_table,aes(x=reorder(Site_Code,order,max),y = K...21, middle=mean(DTN), fill=Watershed_Level)) +
+  scale_fill_gradient2(name="Watershed Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", 
+                        guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  theme_bw(base_size=20)+
+  theme(legend.position = "none") +
+  labs(x = "Site", y = "K (mg/L)") 
+
+po4 <- ggplot() +
+  geom_boxplot(data=chla_table,aes(x=reorder(Site_Code,order,max),y = PO4...27, middle=mean(DTN), fill=Watershed_Level)) +
+  scale_fill_gradient2(name="Watershed Burn Intensity",low="#56B4E9", mid="#F0E442", high="#D55E00", 
+                        guide="colourbar", midpoint=0.225, limits=c(0,0.45576),) +
+  theme_bw(base_size=20)+
+  theme(legend.position = "none") +
+  labs(x = "", y = "PO4 (mg/L)") 
+
+#ggsave('data/plot_ammonium.jpg',plot=last_plot(), width=14,height=4.5)
+
+ggarrange(tdn,no3,po4,k, ncol=1, nrow=4)#, common.legend=T) 
+```
 
 ```{r, echo = F, include= F, eval=F, warning=F, message=F, fig.width=11.5}
 # ggplot(filter(chla_table, Loc=="Reservoir")) +
@@ -224,8 +272,9 @@ ggarrange(tdn,no3,nh4, ncol=1, nrow=3)#, common.legend=T)
 #   theme(legend.position = "none") 
 ```
 
-When comparing locations above and below reservoirs, chlorophyll a was almost always higher at the reservoir outlet. Moreover, river segments downstream of reservoirs had water quality that was highly correlated with reservoir water quality overall, highlighting the tight linkage between reservoir and river dynamics. For example, Figure 3 shows how Joe Wright and Chambers both elevate chlorophyll a when moving down the river profile; though chlorophyll a concentration drops off at their river outlets, there is still a sustained increase in chlorophyll a as one works their way downstream. Likely because of this algal growth in reservoirs, NO3 concentrations follow an opposite pattern, with elevated NO3 concentrations in the rivers, declines in the reservoirs from algal consumption of NO3, and increases again in the river. The slow post-disturbance recovery typical of high-elevation forests suggests that greater nutrient transfer from the burned landscapes is likely to persist for many years, and the risk of harmful algae blooms may increase with time or with different hydrological and temperature conditions. The summer of 2021 was characterized by several well-timed thunderstorms and rain events that may have reset algal communities in all reservoirs and the mainstem of the CLP.
+## Reservoir and Stream Dynamics
 
+When comparing locations above and below reservoirs, chlorophyll a was almost always higher at the reservoir outlet. Moreover, reservoirs and their outlets had chlorophyll a and nutrient concentrations that were correlated with each other, highlighting the tight linkage between reservoir and river dynamics. For example, Figure 3.6 shows how Joe Wright and Chambers Reservoirs both elevate chlorophyll a when moving down the river profile; though chlorophyll a concentrations decrease at their river outlets, there is still a sustained increase in chlorophyll a as one works their way downstream. Likely because of this algal growth in reservoirs, NO3 concentrations follow an opposite pattern, with elevated NO3 concentrations in the rivers, declines in the reservoirs from algal consumption of NO3, and increases again in the river. 
 
 ```{r, echo = F, include= F, eval=F, warning=F, message=F, fig.width=13.5, fig.height=10}
 # chla <- ggplot() +
@@ -291,4 +340,6 @@ knitr::include_graphics("data/longitudinal.jpg")
 #   theme(legend.position = "none") 
 ```
 
+### Fire Effects on Algae Dynamics
 
+The slow post-disturbance recovery typical of high-elevation forests suggests that greater nutrient transfer from the burned landscapes is likely to persist for many years, and the risk of harmful algae blooms may increase with time or with different hydrological and temperature conditions. The summer of 2021 was characterized by several well-timed thunderstorms and rain events that may have reset algal communities in all reservoirs and the mainstem of the Cache la Poudre.
